@@ -43,7 +43,8 @@ public class UserControllerTest {
     void testPostInvalidUser() {
         userController.create(user);
 
-        assertEquals(userController.getAll().size(), 0, "Пользователь добавлен в коллекцию");
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(2, violations.size(), "Валидация прошла успешно");
     }
 
     @Test
@@ -52,14 +53,12 @@ public class UserControllerTest {
         user.setLogin("brick");
         user.setEmail("block#gmail.com");
         user.setBirthday(LocalDate.of(2002, 8, 6));
-        userController.create(user);
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
         ConstraintViolation<User> violation = violations.iterator().next();
         assertEquals("Почта должна содержать символ @", violation.getMessage());
         assertEquals("email", violation.getPropertyPath().toString());
-        assertEquals(userController.getAll().size(), 0, "Пользователь добавлен в коллекцию");
     }
 
     @Test
@@ -67,14 +66,12 @@ public class UserControllerTest {
         user.setName("Block");
         user.setLogin("brick");
         user.setBirthday(LocalDate.of(2002, 8, 6));
-        userController.create(user);
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
         ConstraintViolation<User> violation = violations.iterator().next();
         assertEquals("Почта не может быть пустой", violation.getMessage());
         assertEquals("email", violation.getPropertyPath().toString());
-        assertEquals(userController.getAll().size(), 0, "Пользователь добавлен в коллекцию");
     }
 
     @Test
@@ -83,14 +80,12 @@ public class UserControllerTest {
         user.setLogin("brick");
         user.setEmail("");
         user.setBirthday(LocalDate.of(2002, 8, 6));
-        userController.create(user);
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
         ConstraintViolation<User> violation = violations.iterator().next();
         assertEquals("Почта не может быть пустой", violation.getMessage());
         assertEquals("email", violation.getPropertyPath().toString());
-        assertEquals(userController.getAll().size(), 0, "Пользователь добавлен в коллекцию");
     }
 
     @Test
@@ -117,19 +112,44 @@ public class UserControllerTest {
     }
 
     @Test
+    void testPostUserWithSpaceInLogin() {
+        user.setLogin("brick h");
+        user.setName("Brick");
+        user.setEmail("block@gmail.com");
+        user.setBirthday(LocalDate.of(2002, 8, 6));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(1, violations.size());
+        ConstraintViolation<User> violation = violations.iterator().next();
+        assertEquals("Логин не может содержать пробелы", violation.getMessage());
+        assertEquals("login", violation.getPropertyPath().toString());
+    }
+
+    @Test
+    void testPostUserWithoutLogin() {
+        user.setName("Brick");
+        user.setEmail("block@gmail.com");
+        user.setBirthday(LocalDate.of(2002, 8, 6));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(1, violations.size());
+        ConstraintViolation<User> violation = violations.iterator().next();
+        assertEquals("Логин не может быть пустым", violation.getMessage());
+        assertEquals("login", violation.getPropertyPath().toString());
+    }
+
+    @Test
     void testPostUserWithFutureBirthday() {
         user.setLogin("brick");
         user.setName("Block");
         user.setEmail("block@gmail.com");
         user.setBirthday(LocalDate.of(2023, 8, 6));
-        userController.create(user);
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
         ConstraintViolation<User> violation = violations.iterator().next();
         assertEquals("Дата рождения не может быть в будущем", violation.getMessage());
         assertEquals("birthday", violation.getPropertyPath().toString());
-        assertEquals(userController.getAll().size(), 0, "Пользователь добавлен в коллекцию");
     }
 
     @Test

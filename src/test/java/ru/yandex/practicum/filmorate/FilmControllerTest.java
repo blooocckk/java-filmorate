@@ -45,7 +45,8 @@ public class FilmControllerTest {
     void testPostInvalidFilm() {
         filmController.create(film);
 
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertEquals(2, violations.size(), "Валидация прошла успешно");
     }
 
     @Test
@@ -54,14 +55,12 @@ public class FilmControllerTest {
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
         film.setDuration(120);
-        filmController.create(film);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         ConstraintViolation<Film> violation = violations.iterator().next();
         assertEquals("Название не может быть пустым", violation.getMessage());
         assertEquals("name", violation.getPropertyPath().toString());
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
     }
 
     @Test
@@ -71,14 +70,12 @@ public class FilmControllerTest {
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
         film.setDuration(120);
-        filmController.create(film);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         ConstraintViolation<Film> violation = violations.iterator().next();
         assertEquals("Название не может быть пустым", violation.getMessage());
         assertEquals("name", violation.getPropertyPath().toString());
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
     }
 
     @Test
@@ -91,14 +88,12 @@ public class FilmControllerTest {
                 "Test description Test description Test description");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
         film.setDuration(120);
-        filmController.create(film);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         ConstraintViolation<Film> violation = violations.iterator().next();
         assertEquals("Максимальная длина описания — 200 символов", violation.getMessage());
         assertEquals("description", violation.getPropertyPath().toString());
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
     }
 
     @Test
@@ -131,14 +126,12 @@ public class FilmControllerTest {
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(120);
-        filmController.create(film);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         ConstraintViolation<Film> violation = violations.iterator().next();
         assertEquals("Дата релиза не может быть раньше 1895-12-28", violation.getMessage());
         assertEquals("releaseDate", violation.getPropertyPath().toString());
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
     }
 
     @Test
@@ -170,14 +163,12 @@ public class FilmControllerTest {
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setDuration(-120);
-        filmController.create(film);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         ConstraintViolation<Film> violation = violations.iterator().next();
         assertEquals("Продолжительность фильма должна быть положительной", violation.getMessage());
         assertEquals("duration", violation.getPropertyPath().toString());
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
     }
 
     @Test
@@ -187,8 +178,11 @@ public class FilmControllerTest {
         film.setDescription("DescriptionTest");
         film.setDuration(0);
 
-        assertEquals(filmController.create(film), film, "Созданный фильм отличается");
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertEquals(1, violations.size());
+        ConstraintViolation<Film> violation = violations.iterator().next();
+        assertEquals("Продолжительность фильма должна быть положительной", violation.getMessage());
+        assertEquals("duration", violation.getPropertyPath().toString());
     }
 
     @Test
@@ -198,8 +192,11 @@ public class FilmControllerTest {
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
 
-        assertEquals(filmController.create(film), film, "Созданный фильм отличается");
-        assertEquals(filmController.getAll().size(), 0, "Фильм добавлен в коллекцию");
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertEquals(1, violations.size());
+        ConstraintViolation<Film> violation = violations.iterator().next();
+        assertEquals("Продолжительность фильма должна быть положительной", violation.getMessage());
+        assertEquals("duration", violation.getPropertyPath().toString());
     }
 
     @Test

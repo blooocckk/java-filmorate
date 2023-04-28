@@ -8,58 +8,50 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.*;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
-public class UserController {
-    private static int userId = 1;
-    private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private final Validator validator = factory.getValidator();
-    private final HashMap<Integer, User> users = new HashMap<>();
+public class UserController extends BaseController<User> {
+    private void validation(User user, boolean isUpdate) {
+        if (isUpdate) {
+            if (isCreated(user.getId())) {
+                log.warn("Пользователь не найден, ID: {}", user.getId());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
+            }
+        }
+        if (user.getName() == null || user.getName().isEmpty()) {
+            user.setName(user.getLogin());
+        }
+    }
 
     @GetMapping
     public Collection<User> getAll() {
-        return users.values();
+        log.info("Получен запрос на получение всех пользователей");
+        return super.getAll();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        if (!violations.isEmpty()) {
-            log.error("Невалидные данные, попробуйте снова");
-            return user;
-        }
-        if (user.getName() == null || user.getName().isEmpty()) {
-            log.info("Имя не задано, указали логин");
-            user.setName(user.getLogin());
-        }
-        user.setId(userId);
-        userId++;
-        users.put(user.getId(), user);
-        log.info("Пользователь создан");
-        return user;
+        log.info("Получен запрос на создание пользователя");
+        validation(user, false);
+        return super.create(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        if (!users.containsKey(user.getId())) {
-            log.warn("Пользователь не найден, ID: {}", user.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден");
-        }
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        if (!violations.isEmpty()) {
-            log.error("Невалидные данные, попробуйте снова");
-            return user;
-        }
-        if (user.getName() == null || user.getName().isEmpty()) {
-            log.info("Имя не задано, указали логин");
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        log.info("Пользователь обновлен");
-        return user;
+        log.info("Получен запрос на обновление пользователя");
+        validation(user, true);
+        return super.update(user);
+    }
+
+    @Override
+    protected void setId(int id, User user) {
+        user.setId(id);
+    }
+
+    @Override
+    protected int getId(User user) {
+        return user.getId();
     }
 }

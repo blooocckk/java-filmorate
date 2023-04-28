@@ -8,50 +8,44 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.*;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
-public class FilmController {
-    private static int filmId = 1;
-    private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private final Validator validator = factory.getValidator();
-    private final HashMap<Integer, Film> films = new HashMap<>();
+public class FilmController extends BaseController<Film> {
+    private void validation(Film film) {
+        if (isCreated(film.getId())) {
+            log.warn("Фильм не найден, ID: {}", film.getId());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Фильм не найден");
+        }
+    }
 
     @GetMapping
     public Collection<Film> getAll() {
-        return films.values();
+        log.info("Получен запрос на получение всех фильмов");
+        return super.getAll();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        if (!violations.isEmpty()) {
-            log.error("Невалидные данные, попробуйте снова");
-            return film;
-        }
-        film.setId(filmId);
-        filmId++;
-        films.put(film.getId(), film);
-        log.info("Фильм создан");
-        return film;
+        log.info("Получен запрос на создание фильма");
+        return super.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        if (!films.containsKey(film.getId())) {
-            log.warn("Фильм не найден, ID: {}", film.getId());
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Фильм не найден");
-        }
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        if (!violations.isEmpty()) {
-            log.error("Невалидные данные, попробуйте снова");
-            return film;
-        }
-        films.put(film.getId(), film);
-        log.info("Фильм обновлен");
-        return film;
+        log.info("Получен запрос на обновление фильма");
+        validation(film);
+        return super.update(film);
+    }
+
+    @Override
+    protected void setId(int id, Film film) {
+        film.setId(id);
+    }
+
+    @Override
+    protected int getId(Film film) {
+        return film.getId();
     }
 }
