@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -22,7 +24,9 @@ public class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
+        UserService userService = new UserService(inMemoryUserStorage);
+        userController = new UserController(userService);
         user = new User();
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
@@ -178,9 +182,9 @@ public class UserControllerTest {
 
     @Test
     void testUpdateNonExistentUser() {
-        user.setId(200);
+        user.setId(200L);
 
-        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> userController.update(user));
         assertEquals(userController.getAll().size(), 0, "Размер коллекции изменился");
     }
