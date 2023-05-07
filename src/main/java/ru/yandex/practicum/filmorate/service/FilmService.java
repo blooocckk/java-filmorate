@@ -19,11 +19,11 @@ public class FilmService {
         this.filmStorage = filmStorage;
     }
 
-    public Film create (Film film) {
+    public Film create(Film film) {
         return filmStorage.create(film);
     }
 
-    public Film update (Film film) {
+    public Film update(Film film) {
         return filmStorage.update(film);
     }
 
@@ -31,7 +31,7 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    public Film getFilmById (Long id) {
+    public Film getFilmById(Long id) {
         return filmStorage.getFilmById(id);
     }
 
