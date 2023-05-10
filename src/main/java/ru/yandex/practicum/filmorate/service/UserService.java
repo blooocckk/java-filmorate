@@ -1,64 +1,82 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class UserService {
-    private final UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
+public class UserService extends AbstractService<User> {
+    private void validation(User user, boolean isUpdate) {
+        if (isUpdate) {
+            try {
+                super.getById(user.getId());
+            } catch (ObjectNotFoundException e) {
+                log.warn("Пользователь не найден, ID {}", user.getId());
+                throw new ObjectNotFoundException("Пользователь не найден, ID " + user.getId());
+            }
+        }
+        if (user.getName() == null || user.getName().isEmpty()) {
+            user.setName(user.getLogin());
+        }
     }
 
     public User create(User user) {
-        return userStorage.create(user);
+        validation(user, false);
+        log.info("Создание пользователя выполнено");
+        return super.create(user);
     }
 
     public User update(User user) {
-        return userStorage.update(user);
+        validation(user, true);
+        log.info("Обновление пользователя выполнено");
+        return super.update(user);
     }
 
     public Collection<User> getAll() {
-        return userStorage.getAll();
+        log.info("Возвращаем список всех пользователей");
+        return super.getAll();
     }
 
     public User getUserById(Long id) {
-        return userStorage.getUserById(id);
+        log.info("Возвращаем пользователя");
+        return super.getById(id);
     }
 
     public List<User> getFriends(Long id) {
         log.info("Возвращаем список друзей");
-        return userStorage.getUserById(id).getFriends().stream()
-                .map(userStorage::getUserById)
+        Set<Long> userFriends = super.getById(id).getFriends();
+        return userFriends.stream()
+                .map(super::getById)
                 .collect(Collectors.toList());
     }
 
     public void addAsFriend(Long userId, Long id) {
-        Long friendId = userStorage.getUserById(id).getId();
-        userStorage.addAsFriend(userId, friendId);
-        userStorage.addAsFriend(friendId, userId);
+        Long friendId = super.getById(id).getId();
+        super.getById(userId).getFriends().add(friendId);
+        super.getById(friendId).getFriends().add(userId);
+        log.info("Добавление в друзья выполнено");
     }
 
     public void removeFromFriends(Long userId, Long id) {
-        userStorage.removeFromFriends(userId, id);
-        userStorage.removeFromFriends(id, userId);
+        super.getById(userId).getFriends().remove(id);
+        super.getById(id).getFriends().remove(userId);
+        log.info("Удаление из друзей выполнено");
     }
 
     public List<User> getMutualFriends(Long userId, Long id) {
         log.info("Возвращаем список общих друзей");
-        return userStorage.getUserById(userId).getFriends().stream()
-                .filter(userStorage.getUserById(id).getFriends()::contains)
-                .map(userStorage::getUserById)
+        Set<Long> firstUserFriends = super.getById(userId).getFriends();
+        Set<Long> secondUserFriends = super.getById(id).getFriends();
+        return firstUserFriends.stream()
+                .filter(secondUserFriends::contains)
+                .map(super::getById)
                 .collect(Collectors.toList());
     }
 }

@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
@@ -11,7 +10,6 @@ import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Component
 public class User extends AbstractModel {
     @NotBlank(message = "Почта не может быть пустой")
     @Email(message = "Почта должна содержать символ @")
