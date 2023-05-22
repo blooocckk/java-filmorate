@@ -1,14 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class User {
-    private int id;
-
+public class User extends AbstractModel {
     @NotBlank(message = "Почта не может быть пустой")
     @Email(message = "Почта должна содержать символ @")
     private String email;
@@ -21,4 +23,6 @@ public class User {
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+
+    private Set<Long> friends = new HashSet<>();
 }

@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -23,7 +25,9 @@ public class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        InMemoryFilmStorage inMemoryFilmStorage = new InMemoryFilmStorage();
+        FilmService filmService = new FilmService(inMemoryFilmStorage);
+        filmController = new FilmController(filmService);
         film = new Film();
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
@@ -31,7 +35,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilm() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
@@ -51,7 +55,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithoutName() {
-        film.setId(1);
+        film.setId(1L);
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
         film.setDuration(120);
@@ -65,7 +69,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithEmptyName() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("");
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
@@ -80,7 +84,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithDescriptionMoreThan200Char() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("Test description Test description Test description " +
                 "Test description Test description Test description " +
@@ -98,7 +102,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithEmptyDescription() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
@@ -110,7 +114,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithoutDescription() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
         film.setDuration(120);
@@ -121,7 +125,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithIncorrectDate() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
@@ -136,7 +140,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithDate1895_12_28() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
@@ -148,7 +152,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithEmptyDate() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setDuration(120);
@@ -159,7 +163,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithNegativeDuration() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setDuration(-120);
@@ -173,7 +177,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithZeroDuration() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setDuration(0);
@@ -187,7 +191,7 @@ public class FilmControllerTest {
 
     @Test
     void testPostFilmWithoutDuration() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
@@ -201,7 +205,7 @@ public class FilmControllerTest {
 
     @Test
     void testUpdateFilm() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
@@ -217,7 +221,7 @@ public class FilmControllerTest {
 
     @Test
     void testUpdateFilmWithIncorrectData() {
-        film.setId(1);
+        film.setId(1L);
         film.setName("Morning Bell");
         film.setDescription("DescriptionTest");
         film.setReleaseDate(LocalDate.of(2019, 12, 1));
@@ -234,9 +238,9 @@ public class FilmControllerTest {
 
     @Test
     void testUpdateNonExistentFilm() {
-        film.setId(4);
+        film.setId(4L);
 
-        ResponseStatusException e = assertThrows(ResponseStatusException.class,
+        ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
                 () -> filmController.update(film));
         assertEquals(filmController.getAll().size(), 0, "Размер коллекции изменился");
     }
