@@ -67,7 +67,7 @@
 
 ## ER-диаграмма
 
-![ER-диаграмма](https://github.com/blooocckk/java-filmorate/blob/main/resources/ER.png)
+![ER-диаграмма](https://github.com/blooocckk/java-filmorate/blob/main/ER.png)
 
 ER-диаграмма иллюстрирует сущности и их связи в программе.
 
