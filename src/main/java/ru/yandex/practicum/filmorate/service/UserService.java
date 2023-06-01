@@ -10,8 +10,6 @@ import ru.yandex.practicum.filmorate.storage.users.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -76,8 +74,6 @@ public class UserService {
 
     public List<User> getMutualFriends(Long userId, Long id) {
         log.info("Возвращаем список общих друзей");
-        Set<Long> firstUserFriends = userStorage.getById(userId).getFriends();
-        Set<Long> secondUserFriends = userStorage.getById(id).getFriends();
         return userStorage.getMutualFriends(userId, id);
     }
 }
