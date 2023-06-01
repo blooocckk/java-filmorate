@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Component("InMemoryFilmStorage")
 @Qualifier("memory")
 public class InMemoryFilmStorage extends BaseStorage<Film> implements FilmStorage {
-    private final static Comparator<Film> likesComparator = (o1, o2) -> (o2.getLikes().size() - o1.getLikes().size());
+    private static final Comparator<Film> likesComparator = (o1, o2) -> (o2.getLikes().size() - o1.getLikes().size());
 
     @Override
     public void addLike(Long filmId, Long id) {
