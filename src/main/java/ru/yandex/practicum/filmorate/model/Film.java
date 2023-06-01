@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validators.ReleaseDate;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -24,6 +22,10 @@ public class Film extends AbstractModel {
 
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private int duration;
+
+    private Mpa mpa;
+
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
     private Set<Long> likes = new HashSet<>();
 }

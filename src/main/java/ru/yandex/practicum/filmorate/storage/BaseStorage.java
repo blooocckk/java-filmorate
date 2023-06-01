@@ -25,6 +25,10 @@ public abstract class BaseStorage<T extends AbstractModel> {
         return t;
     }
 
+    public void delete(T t) {
+        storage.remove(t.getId(), t);
+    }
+
     public T getById(Long id) {
         return Optional.ofNullable(storage.get(id))
                 .orElseThrow(() -> {
