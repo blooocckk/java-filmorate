@@ -256,7 +256,6 @@ public class FilmDbStorageIntegrationTest {
         Film createdFilm2 = filmDbStorage.create(film);
         User createdUser = userDbStorage.create(user);
         filmDbStorage.addLike(createdFilm2.getId(), createdUser.getId());
-        createdFilm2.setLikes(likesDbStorage.getLikes(film.getId()));
 
         List<Film> films = new ArrayList<>(filmDbStorage.getMostPopular(2));
 
@@ -272,11 +271,9 @@ public class FilmDbStorageIntegrationTest {
         Film createdFilm = filmDbStorage.create(film);
         User createdUser = userDbStorage.create(user);
         filmDbStorage.addLike(createdFilm.getId(), createdUser.getId());
-        Set<Long> likes = new HashSet<>();
-        likes.add(user.getId());
-        createdFilm.setLikes(likes);
+        likesDbStorage.getLikes(createdFilm.getId());
 
-        assertEquals(createdFilm.getLikes(), likesDbStorage.getLikes(film.getId()));
+        assertTrue(likesDbStorage.getLikes(createdFilm.getId()).contains(createdUser.getId()));
     }
 
     @Test

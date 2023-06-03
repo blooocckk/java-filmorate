@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.users;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,23 +15,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
-@Qualifier("database")
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FriendshipStorage friendshipStorage;
-
-    @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate, FriendshipStorage friendshipStorage) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.friendshipStorage = friendshipStorage;
-    }
 
     @Override
     public User create(User user) {
@@ -60,7 +51,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User getById(Long id) {
-        String query = "SELECT * FROM USERS WHERE ID = ?";
+        String query = "SELECT u.ID, u.EMAIL, u.LOGIN, u.NAME, u.BIRTHDAY FROM USERS u WHERE ID = ?";
         try {
             return jdbcTemplate.queryForObject(query, new UserRowMapper(), id);
         } catch (EmptyResultDataAccessException e) {
@@ -81,7 +72,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        String query = "SELECT * FROM USERS";
+        String query = "SELECT u.ID, u.EMAIL, u.LOGIN, u.NAME, u.BIRTHDAY FROM USERS u";
         return jdbcTemplate.query(query, new UserRowMapper());
     }
 
@@ -93,20 +84,20 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Long id) {
-        Set<Long> userFriends = friendshipStorage.getUserFriends(id);
-        return userFriends.stream()
-                .map(this::getById)
-                .collect(Collectors.toList());
+        String query = "SELECT u.ID, u.EMAIL, u.LOGIN, u.NAME, u.BIRTHDAY " +
+                "FROM USERS u " +
+                "JOIN FRIENDSHIP f ON u.ID = f.USER2_ID " +
+                "WHERE f.USER1_ID = ?;";
+        return jdbcTemplate.query(query, new UserRowMapper(), id);
     }
 
     @Override
     public List<User> getMutualFriends(Long userId, Long friendId) {
-        Set<Long> firstUserFriends = friendshipStorage.getUserFriends(userId);
-        Set<Long> secondUserFriends = friendshipStorage.getUserFriends(friendId);
-        return firstUserFriends.stream()
-                .filter(secondUserFriends::contains)
-                .map(this::getById)
-                .collect(Collectors.toList());
+        String query = "SELECT u.ID, u.EMAIL, u.LOGIN, u.NAME, u.BIRTHDAY " +
+                "FROM friendship AS f1 " +
+                "JOIN friendship AS f2 ON f1.USER2_ID  = f2.USER2_ID  AND f1.USER1_ID = ? AND f2.USER1_ID = ? " +
+                "JOIN users AS u ON f1.USER2_ID  = u.id;";
+        return jdbcTemplate.query(query, new UserRowMapper(), userId, friendId);
     }
 
     @Override
@@ -115,7 +106,7 @@ public class UserDbStorage implements UserStorage {
         friendshipStorage.delete(id, userId);
     }
 
-    private class UserRowMapper implements RowMapper<User> {
+    private static class UserRowMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
             User user = new User();
@@ -124,7 +115,6 @@ public class UserDbStorage implements UserStorage {
             user.setLogin(rs.getString("LOGIN"));
             user.setName(rs.getString("NAME"));
             user.setBirthday(rs.getDate("BIRTHDAY").toLocalDate());
-            user.setFriends(new HashSet<>(friendshipStorage.getUserFriends(user.getId())));
             return user;
         }
     }

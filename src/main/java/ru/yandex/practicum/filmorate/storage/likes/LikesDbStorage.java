@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.likes;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 
@@ -11,15 +10,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Component
 @Repository
+@RequiredArgsConstructor
 public class LikesDbStorage implements LikesStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public LikesDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     private boolean isLikeExists(Long filmId, Long userId) {
         String sql = "SELECT COUNT(*) FROM LIKES WHERE (FILM_ID = ? AND USER_ID = ?) OR FILM_ID = ? OR USER_ID = ?";

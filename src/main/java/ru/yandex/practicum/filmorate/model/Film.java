@@ -26,6 +26,4 @@ public class Film extends AbstractModel {
     private Mpa mpa;
 
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
-
-    private Set<Long> likes = new HashSet<>();
 }
