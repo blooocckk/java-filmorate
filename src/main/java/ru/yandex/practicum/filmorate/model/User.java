@@ -5,8 +5,6 @@ import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -23,6 +21,4 @@ public class User extends AbstractModel {
 
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
-
-    private Set<Long> friends = new HashSet<>();
 }

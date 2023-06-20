@@ -5,10 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.films.FilmStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -51,24 +50,17 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long id) {
-        filmStorage.getById(filmId).getLikes().add(id);
+        filmStorage.addLike(filmId, id);
         log.info("Добавление лайка выполнено");
     }
 
     public void removeLike(Long filmId, Long id) {
-        if (!filmStorage.getById(filmId).getLikes().removeIf(e -> e.equals(id))) {
-            log.warn("Пользователь не найден, ID " + id);
-            throw new ObjectNotFoundException("Пользователь не найден, ID " + id);
-        }
+        filmStorage.removeLike(filmId, id);
         log.info("Удаление лайка выполнено");
     }
 
     public List<Film> getMostPopular(int count) {
         log.info("Возвращаем список популярных фильмов");
-        Comparator<Film> likesComparator = (o1, o2) -> (o2.getLikes().size() - o1.getLikes().size());
-        return filmStorage.getAll().stream()
-                .sorted(likesComparator)
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getMostPopular(count);
     }
 }
